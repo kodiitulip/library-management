@@ -1,29 +1,29 @@
-# Library Management
+# 📚 Library Management
 
 Um sistema simples de gerenciamento de biblioteca criado para a
 disciplina de Estrutura de Dados, utilizando Python e uma
 interface de linha de comando (CLI) simples.
 
-## Entidades Principais
+## ✨ Entidades Principais
 
-- `Book` (Livro)
-- `Member` (Usuário)
-- `Library` (Biblioteca)
+- `Book` (Livro) ✅
+- `Member` (Usuário) 🚧
+- `Library` (Biblioteca) ✅
 
-## Funcionalidades Principais
+## ✨ Funcionalidades Principais
 
-- Adicionar / Remover livros
-- Buscar livros
+- Adicionar / Remover livros 🚧
+- Buscar livros ✅
 - Emprestar / Devolver livros
-- Listar livros disponíveis
+- Listar livros disponíveis ✅
 - Rastrear livros emprestados por membro
 
-## Instalação e Execução
+## 💻 Instalação e Execução
 
 Você pode executar este projeto usando [**UV**](https://docs.astral.sh/uv)
 (recomendado pela velocidade) ou o bom e velho `pip`.
 
-### Usando UV
+### 🚀 Usando UV
 
 1. Instale o [UV](https://docs.astral.sh/uv)
 2. Clone este repositório:
@@ -39,7 +39,7 @@ Você pode executar este projeto usando [**UV**](https://docs.astral.sh/uv)
    uv run library --help
    ```
 
-### Usando pip
+### 🐍 Usando pip
 
 1. Clone este repositório:
 
@@ -75,15 +75,19 @@ Você pode executar este projeto usando [**UV**](https://docs.astral.sh/uv)
    ```bash
    python -m library
    # ^ se falhar tente:
+   # 🍎/🐧:
    python src/library_management/
+   # 🪟:
+   python .\src\library-management\
    ```
 
 ## 🧠 Notas
 
 - Utiliza estruturas de dados básicas (dicionários, listas, filas, pilhas)
 para simular o comportamento do sistema.
+- Utilizamos uma Arvore Binária para uma pesquisa rápida para
+os livros (sujeito a mudanças)
 
 ## 📜 Licença
 
-[MIT](./LICENSE) — faça o que quiser, só não me culpe se sua estante pegar
-fogo. 🔥
+[MIT](./LICENSE)
