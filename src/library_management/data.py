@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, dataclass, field
 from enum import StrEnum
+import os
 from typing import Protocol
 
 
@@ -25,11 +26,12 @@ class Book:
         if "title" not in book_dict:
             return None
         title, author = (
-            book_dict.get("title", "MISSING"),
+            book_dict["title"],
             book_dict.get("author", "MISSING"),
         )
         b = Book(title, author)
-        b.status = book_dict.get("status", BookStatus.AVAILABLE)
+        status = book_dict.get("status", BookStatus.AVAILABLE)
+        b.status = BookStatus(status)
         return b
 
 
@@ -50,7 +52,12 @@ class BookNode:
     amount: int = field(default=0, init=False)
 
     def to_dict(self) -> dict:
-        return asdict(self)
+        return {
+            "book": self.book.to_dict(),
+            "left": self.left.to_dict() if self.left else None,
+            "right": self.right.to_dict() if self.right else None,
+            "amount": self.amount,
+        }
 
     @staticmethod
     def from_dict(node_dict: dict) -> BookNode | None:
@@ -77,9 +84,8 @@ class BookBST:
     def root(self, value: BookNode | None):
         self.__root = value
 
-    def __init__(self, path: str = "./library.json") -> None:
+    def __init__(self) -> None:
         self.__root: BookNode | None = None
-        self.__path: str = path
 
     def insert(self, book: Book) -> None:
         def _insert(node: BookNode | None) -> BookNode | None:
@@ -95,7 +101,6 @@ class BookBST:
             return node
 
         self.__root = _insert(self.root)
-        self.to_file(self.__path)
 
     def search_by_title(self, title: str) -> Book | None:
         def _search(node: BookNode | None) -> Book | None:
@@ -119,9 +124,7 @@ class BookBST:
             if not node:
                 return
             _in_order(node.left)
-            if not compare_fn:
-                raise ValueError("Compare function could not be called")
-            elif compare_fn(node.book):
+            if compare_fn(node.book):
                 result.append(node.book)
             _in_order(node.right)
 
@@ -138,14 +141,22 @@ class BookBST:
             lambda n: title.strip().lower() in n.title.lower()
         )
 
+    def __len__(self) -> int:
+        return len(self.in_order_traversal())
+
+    def __contains__(self, title: str) -> bool:
+        return self.search_by_title(title) is not None
+
     def to_file(self, path: str) -> None:
         with open(path, "w", encoding="utf-8") as f:
             json.dump(self.root.to_dict() if self.root else {}, f, indent=2)
 
     @staticmethod
     def from_file(path: str) -> BookBST:
+        tree = BookBST()
+        if not os.path.exists(path):
+            return tree
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
-        tree = BookBST(path)
         tree.root = BookNode.from_dict(data)
         return tree
