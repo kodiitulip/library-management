@@ -73,12 +73,7 @@ Você pode executar este projeto usando [**UV**](https://docs.astral.sh/uv)
 4. Execute o app:
 
    ```bash
-   python -m library
-   # ^ se falhar tente:
-   # 🍎/🐧:
-   python src/library_management/
-   # 🪟:
-   python .\src\library-management\
+   python -m library_management
    ```
 
 ## 🧠 Notas
