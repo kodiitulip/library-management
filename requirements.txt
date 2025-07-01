@@ -1,5 +1,8 @@
+# the local module so pip builds it and installs it
+-e .
+
+
 click==8.2.1
--e file:///home/kodie/Projects/Python/library-management
 markdown-it-py==3.0.0
 mdurl==0.1.2
 pygments==2.19.2

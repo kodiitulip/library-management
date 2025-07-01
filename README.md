@@ -74,12 +74,13 @@ Você pode executar este projeto usando [**UV**](https://docs.astral.sh/uv)
 
    ```bash
    python -m library_management
+   # se estiver usando um ambiente virtual
+   # é possível que utilizar o seguinte comando funcione:
+   library
    ```
 
 ## 🧠 Notas
 
-- Utiliza estruturas de dados básicas (dicionários, listas, filas, pilhas)
-para simular o comportamento do sistema.
 - Utilizamos uma Arvore Binária para uma pesquisa rápida para
 os livros (sujeito a mudanças)
 
