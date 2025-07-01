@@ -12,6 +12,14 @@ class BookStatus(StrEnum):
     UNAVAILABLE = "unavailable"
 
 
+@dataclass
+class State:
+    book_storage: BookBST
+    member_storage: MemberList
+    lib_path: str
+    member_path: str
+
+
 @dataclass(order=True)
 class Book:
     title: str
@@ -35,13 +43,56 @@ class Book:
         return b
 
 
-@dataclass()
+@dataclass(order=True)
 class Member:
-    name: str
+    username: str
+    password: str = field(compare=False)
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+    @staticmethod
+    def from_dict(dict: dict[str, str]) -> Member:
+        if "username" not in dict or "password" not in dict:
+            raise ValueError("Could not parse user from dictionary")
+        return Member(**dict)
 
 
-class TraversalCompareFunction(Protocol):
-    def __call__(self, book: Book, /) -> bool: ...
+@dataclass
+class MemberList:
+    members: list[Member] = field(default_factory=list, kw_only=True)
+    logged_member: Member | None = field(kw_only=True, default=None)
+
+    def find(self, name: str, passwd: str) -> tuple[bool, Member | None]:
+        try:
+            idx = self.members.index(Member(name, passwd))
+            return True, self.members[idx]
+        except ValueError:
+            return False, None
+
+    def append(self, new_member: Member) -> None:
+        self.members.append(new_member)
+        self.members.sort()
+
+    def to_file(self, path: str):
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(asdict(self), f, indent=2)
+
+    @staticmethod
+    def from_file(path: str):
+        memlist = MemberList()
+        if not os.path.exists(path):
+            return memlist
+        with open(path, "r", encoding="utf-8") as f:
+            data: dict = json.load(f)
+        members: list[dict[str, str]] = data.get("members", [])
+        memlist.members = [Member.from_dict(member) for member in members]
+        memlist.members.sort()
+        logged = data.get("logged_member", {}) or {}
+        memlist.logged_member = memlist.find(
+            passwd=logged.get("password", ""), name=logged.get("username", "")
+        )[1]
+        return memlist
 
 
 @dataclass(order=True)
@@ -76,6 +127,9 @@ class BookNode:
 
 
 class BookBST:
+    class TraversalCompareFunction(Protocol):
+        def __call__(self, book: Book, /) -> bool: ...
+
     @property
     def root(self) -> BookNode | None:
         return self.__root

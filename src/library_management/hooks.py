@@ -14,7 +14,8 @@ def savemutation(func):
                 "Missing Typer context (`ctx`) in auto_save-wrapped command"
             )
         result = func(*args, **kwargs)
-        ctx.obj.book_storage.to_file(ctx.obj.storage_path)
+        ctx.obj.book_storage.to_file(ctx.obj.lib_path)
+        ctx.obj.member_storage.to_file(ctx.obj.member_path)
         return result
 
     return wrapper

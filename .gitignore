@@ -6,7 +6,9 @@ dist/
 wheels/
 *.egg-info
 .idea/
-library.json
+
+# generated files
+gendata/
 
 # Virtual environments
 .venv
