@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typer import Context, Option, Typer
+from typer import Argument, Context, Option, Typer
 from rich import print
 from library_management.data import Book, BookBST
 from library_management.hooks import savemutation
@@ -19,6 +19,31 @@ def add_book(
     book: Book = Book(title, author)
     ctx.obj.book_storage.insert(book)
     print(f"Book of title: {book.title} added to the library\n\n")
+@bookcmd.command("remove")
+@savemutation
+def remove_book(
+    ctx: Context,
+    title: str = Argument(help="Título do livro a ser removido"),
+    author: str = Argument(help="Autor do livro a ser removido"),
+):
+    """Remove um livro da lista de livros disponíveis"""
+    library: BookBST = ctx.obj.book_storage
+    books: list[Book] = library.list_by_title(title)
+    found: list[Book] = [
+        book
+        for book in books
+        if book.title.lower() == title.strip().lower()
+        and book.author.lower() == author.strip().lower()
+    ]
+
+    if not found:
+        print(f"[red]Livro [yellow]{title} por {author}[/yellow] não encontrado![/red]")
+        return
+    library.delete(found[0])
+    print(
+        f"[green]Livro [yellow]{found[0].title} por {found[0].author}[/yellow] foi removido![/green]"
+    )
+    list_books(ctx)
 
 
 @bookcmd.command("list")
@@ -26,7 +51,7 @@ def list_books(ctx: Context):
     """Lista todos os livros disponíveis na Biblioteca"""
     b = ctx.obj.book_storage.in_order_traversal()
     for book in b:
-        print(f"- [green]{book.title}[/green] by [yellow]{book.author}[/yellow]")
+        print(f"- [green]{book.title}[/green] por [yellow]{book.author}[/yellow]")
 
 
 @bookcmd.command("find")

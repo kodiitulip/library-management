@@ -18,7 +18,7 @@ app.add_typer(usercmd)
 def main(ctx: Context):
     """Callback para carregar o arquivo de memória e chamar ajuda quando faltar subcommandos"""
     try:
-        os.makedirs("gendata/")
+        os.makedirs(os.getenv("LIBRARY_STORAGE_DIR", "gendata/"))
     except OSError:
         pass
     lib_path = os.getenv("LIBRARY_STORAGE_PATH", "gendata/library.json")
