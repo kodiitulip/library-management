@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Any
 
 import json
 from dataclasses import asdict, dataclass, field
@@ -47,16 +48,25 @@ class Book:
 class Member:
     username: str
     password: str = field(compare=False)
-
+    borrowed_books: list[str] = field(default_factory=list, compare=False) 
+    
     def to_dict(self) -> dict:
         return asdict(self)
 
     @staticmethod
-    def from_dict(dict: dict[str, str]) -> Member:
+    def from_dict(dict: dict[str, Any]) -> Member:
         if "username" not in dict or "password" not in dict:
             raise ValueError("Could not parse user from dictionary")
-        return Member(**dict)
+        
+        borrowed = dict.get("borrowed_books", [])
+        if not isinstance(borrowed, list):
+            borrowed = []
 
+        return Member(
+            username=dict["username"],
+            password=dict["password"],
+            borrowed_books=borrowed,
+        )
 
 @dataclass
 class MemberList:
