@@ -22,29 +22,6 @@ class State:
 
 
 @dataclass(order=True)
-class Book:
-    title: str
-    author: str
-    status: BookStatus = field(default=BookStatus.AVAILABLE, init=False)
-
-    def to_dict(self) -> dict:
-        return asdict(self)
-
-    @staticmethod
-    def from_dict(book_dict: dict) -> Book | None:
-        if "title" not in book_dict:
-            return None
-        title, author = (
-            book_dict["title"],
-            book_dict.get("author", "MISSING"),
-        )
-        b = Book(title, author)
-        status = book_dict.get("status", BookStatus.AVAILABLE)
-        b.status = BookStatus(status)
-        return b
-
-
-@dataclass(order=True)
 class Member:
     username: str
     password: str = field(compare=False)
@@ -106,25 +83,50 @@ class MemberList:
 
 
 @dataclass(order=True)
-class BookNode:
-    book: Book
-    left: BookNode | None = None
-    right: BookNode | None = None
-    amount: int = field(default=0, init=False)
+class Book:
+    title: str
+    author: str
+    id: int = field(default=0, kw_only=True, compare=False)
+    status: BookStatus = field(default=BookStatus.AVAILABLE, init=False, compare=False)
 
     def to_dict(self) -> dict:
-        return {
-            "book": self.book.to_dict(),
-            "left": self.left.to_dict() if self.left else None,
-            "right": self.right.to_dict() if self.right else None,
-            "amount": self.amount,
-        }
+        return asdict(self)
+
+    @staticmethod
+    def from_dict(book_dict: dict) -> Book | None:
+        if "title" not in book_dict:
+            return None
+        title, author, id = (
+            book_dict["title"],
+            book_dict.get("author", "MISSING"),
+            book_dict["id"],
+        )
+        b = Book(title, author, id=id)
+        status = book_dict.get("status", BookStatus.AVAILABLE)
+        b.status = BookStatus(status)
+        return b
+
+
+@dataclass(order=True)
+class BookNode:
+    book: Book
+    left: BookNode | None = field(default=None, kw_only=True, compare=False)
+    right: BookNode | None = field(default=None, kw_only=True, compare=False)
+    amount: int = field(default=1, init=False, compare=False)
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+        # return {
+        #     "book": self.book.to_dict(),
+        #     "left": self.left.to_dict() if self.left else None,
+        #     "right": self.right.to_dict() if self.right else None,
+        #     "parent": self.parent.to_dict() if self.parent else None,
+        #     "amount": self.amount,
+        # }
 
     @staticmethod
     def from_dict(node_dict: dict) -> BookNode | None:
-        if not node_dict:
-            return None
-        if "book" not in node_dict:
+        if not node_dict or "book" not in node_dict:
             return None
         b = Book.from_dict(node_dict.get("book", {}))
         if not b:
@@ -132,8 +134,19 @@ class BookNode:
         n = BookNode(b)
         n.left = BookNode.from_dict(node_dict.get("left", {}))
         n.right = BookNode.from_dict(node_dict.get("right", {}))
-        n.amount = node_dict.get("amount", 0)
+        n.amount = node_dict.get("amount", 1)
         return n
+
+    def successor(self) -> BookNode:
+        """grabs the lowest value that's greater than <self>"""
+        right = self.right
+        if right is None:
+            return self
+
+        current = right
+        while current.left is not None:
+            current = current.left
+        return current
 
 
 class BookBST:
@@ -152,10 +165,10 @@ class BookBST:
         self.__root: BookNode | None = None
 
     def insert(self, book: Book) -> None:
-        def _insert(node: BookNode | None) -> BookNode | None:
-            if not node:
+        def _insert(node: BookNode | None) -> BookNode:
+            if node is None:
                 return BookNode(book)
-            if book < node.book:
+            elif book < node.book:
                 node.left = _insert(node.left)
             elif book > node.book:
                 node.right = _insert(node.right)
@@ -179,6 +192,50 @@ class BookBST:
 
         return _search(self.root)
 
+    def search_by_book(self, book: Book) -> tuple[bool, BookNode]:
+        node = BookNode(book=book)
+        if self.root is None:
+            return False, node
+
+        def _search(root: BookNode | None) -> tuple[bool, BookNode]:
+            if root is None:
+                return False, node
+            elif root == node:
+                return True, root
+            elif root < node:
+                return _search(root.left)
+            else:
+                return _search(root.right)
+
+        return _search(self.root)
+
+    def delete(self, book: Book) -> None:
+        exists, _ = self.search_by_book(book)
+
+        if not exists:
+            print(f"[red]Livro {book.title} por {book.author} não encontrado![/red]")
+            return
+
+        def _delete(root: BookNode | None, key: Book) -> BookNode | None:
+            if root is None:
+                return root
+            if key < root.book:
+                root.left = _delete(root.left, key)
+            elif key > root.book:
+                root.right = _delete(root.right, key)
+            else:
+                if root.left is None:
+                    return root.right
+                elif root.right is None:
+                    return root.left
+                else:
+                    succ = root.successor()
+                    root.book = succ.book
+                    root.right = _delete(root.right, succ.book)
+            return root
+
+        self.__root = _delete(self.root, book)
+
     def in_order_traversal(
         self, compare_fn: TraversalCompareFunction = lambda _: True
     ) -> list[Book]:
@@ -197,7 +254,7 @@ class BookBST:
 
     def list_by_author(self, author: str) -> list[Book]:
         return self.in_order_traversal(
-            lambda n: n.author.strip().lower() == author.lower()
+            lambda n: author.strip().lower() in n.author.lower()
         )
 
     def list_by_title(self, title: str) -> list[Book]:

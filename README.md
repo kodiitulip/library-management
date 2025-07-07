@@ -12,7 +12,7 @@ interface de linha de comando (CLI) simples.
 
 ## ✨ Funcionalidades Principais
 
-- Adicionar / Remover livros 🚧
+- Adicionar / Remover livros ✅
 - Buscar livros ✅
 - Emprestar / Devolver livros
 - Listar livros disponíveis ✅
@@ -74,15 +74,21 @@ Você pode executar este projeto usando [**UV**](https://docs.astral.sh/uv)
 
    ```bash
    python -m library_management
-   # se estiver usando um ambiente virtual
-   # é possível que utilizar o seguinte comando funcione:
+   # se estiver usando um ambiente virtual ativado
+   # é possível que o seguinte comando funcione:
    library
    ```
 
 ## 🧠 Notas
 
-- Utilizamos uma Arvore Binária para uma pesquisa rápida para
-os livros (sujeito a mudanças)
+- Utilizamos uma Arvore de Busca Binária para armazenar os livros.
+Isso permite uma busca veloz e organizada alfabeticamente
+- Utilizamos um arquivo json gerado na pasta `gendata/` para
+armazenar o estado da biblioteca entre comandos da interface
+- Utilizamos a biblioteca [Typer](https://typer.tiangolo.com/) para
+termos uma interface de linha de comando limpa e funcional
+além da biblioteca [Rich](https://rich.readthedocs.io/en/stable/introduction.html)
+para ter maior controle do output pro console
 
 ## 📜 Licença
 
