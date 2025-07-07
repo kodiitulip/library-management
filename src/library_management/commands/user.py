@@ -41,17 +41,15 @@ def register_user(
     member_storage.append(Member(username=username, password=password))
     print(f"[green]Added user [yellow]{username}[/yellow][/green]\n")
 
+
 @usercmd.command("borrow")
 @savemutation
-def borrow_book(
-    ctx: Context, 
-    title: str = Option(..., "--title", "-t", prompt=True)
-):
+def borrow_book(ctx: Context, title: str = Option(..., "--title", "-t", prompt=True)):
     """Pegar um livro emprestado"""
     member_storage: MemberList = ctx.obj.member_storage
     book_storage: BookBST = ctx.obj.book_storage
     member = member_storage.logged_member
-    
+
     if member is None:
         print("[red]Você precisa estar logado para emprestar livros[/red]")
         return
@@ -69,17 +67,15 @@ def borrow_book(
     member.borrowed_books.append(book.title)
     print(f"[green]Livro '{title}' emprestado para {member.username}[/green]")
 
+
 @usercmd.command("return")
 @savemutation
-def return_book(
-    ctx: Context, 
-    title: str = Option(..., "--title", "-t", prompt=True)
-):
+def return_book(ctx: Context, title: str = Option(..., "--title", "-t", prompt=True)):
     """Devolver um livro emprestado"""
     member_storage: MemberList = ctx.obj.member_storage
     book_storage: BookBST = ctx.obj.book_storage
     member = member_storage.logged_member
-    
+
     if member is None:
         print("[red]Você precisa estar logado para devolver livros[/red]")
         return
@@ -103,7 +99,7 @@ def list_borrowed_books(ctx: Context):
     """Lista os livros emprestados pelo usuário logado"""
     member_storage: MemberList = ctx.obj.member_storage
     member = member_storage.logged_member
-    
+
     if member is None:
         print("[red]Você precisa estar logado para ver seus livros emprestados[/red]")
         return
@@ -115,6 +111,7 @@ def list_borrowed_books(ctx: Context):
     print(f"[green]Livros emprestados para {member.username}:[/green]")
     for book in member.borrowed_books:
         print(f"- {book}")
+
 
 @usercmd.command("login")
 @savemutation
@@ -142,4 +139,3 @@ def logout_user(ctx: Context) -> None:
     member_storage: MemberList = ctx.obj.member_storage
     member_storage.logged_member = None
     print("logged out!")
-

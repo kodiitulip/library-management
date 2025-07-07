@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typer import Argument, Context, Option, Typer
 from rich import print
-from library_management.data import Book, BookBST
+from library_management.data import Book, BookBST, BookStatus
 from library_management.hooks import savemutation
 
 bookcmd = Typer(name="book", help="Comandos relacionados a gerenciamendo de livros")
@@ -53,9 +53,12 @@ def remove_book(
 @bookcmd.command("list")
 def list_books(ctx: Context):
     """Lista todos os livros disponíveis na Biblioteca"""
-    b = ctx.obj.book_storage.in_order_traversal()
+    b: list[Book] = ctx.obj.book_storage.in_order_traversal()
     for book in b:
-        print(f"- [green]{book.title}[/green] por [yellow]{book.author}[/yellow]")
+        print(
+            f"- [green]{book.title}[/green] por [yellow]{book.author}[/yellow]"
+            + ("\t[red](INDISPONÍVEL)" if book.status == BookStatus.UNAVAILABLE else "")
+        )
 
 
 @bookcmd.command("find")

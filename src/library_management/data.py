@@ -25,8 +25,8 @@ class State:
 class Member:
     username: str
     password: str = field(compare=False)
-    borrowed_books: list[str] = field(default_factory=list, compare=False) 
-    
+    borrowed_books: list[str] = field(default_factory=list, compare=False)
+
     def to_dict(self) -> dict:
         return asdict(self)
 
@@ -34,7 +34,7 @@ class Member:
     def from_dict(dict: dict[str, Any]) -> Member:
         if "username" not in dict or "password" not in dict:
             raise ValueError("Could not parse user from dictionary")
-        
+
         borrowed = dict.get("borrowed_books", [])
         if not isinstance(borrowed, list):
             borrowed = []
@@ -44,6 +44,7 @@ class Member:
             password=dict["password"],
             borrowed_books=borrowed,
         )
+
 
 @dataclass
 class MemberList:
@@ -86,7 +87,6 @@ class MemberList:
 class Book:
     title: str
     author: str
-    id: int = field(default=0, kw_only=True, compare=False)
     status: BookStatus = field(default=BookStatus.AVAILABLE, init=False, compare=False)
 
     def to_dict(self) -> dict:
@@ -96,12 +96,11 @@ class Book:
     def from_dict(book_dict: dict) -> Book | None:
         if "title" not in book_dict:
             return None
-        title, author, id = (
+        title, author = (
             book_dict["title"],
             book_dict.get("author", "MISSING"),
-            book_dict["id"],
         )
-        b = Book(title, author, id=id)
+        b = Book(title, author)
         status = book_dict.get("status", BookStatus.AVAILABLE)
         b.status = BookStatus(status)
         return b
@@ -183,7 +182,7 @@ class BookBST:
         def _search(node: BookNode | None) -> Book | None:
             if not node:
                 return None
-            if title == node.book.title:
+            if title.strip().lower() == node.book.title.lower():
                 return node.book
             elif title < node.book.title:
                 return _search(node.left)
