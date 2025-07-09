@@ -7,16 +7,16 @@ interface de linha de comando (CLI) simples.
 ## ✨ Entidades Principais
 
 - `Book` (Livro) ✅
-- `Member` (Usuário) 🚧
+- `Member` (Usuário) ✅
 - `Library` (Biblioteca) ✅
 
 ## ✨ Funcionalidades Principais
 
 - Adicionar / Remover livros ✅
 - Buscar livros ✅
-- Emprestar / Devolver livros
+- Emprestar / Devolver livros ✅
 - Listar livros disponíveis ✅
-- Rastrear livros emprestados por membro
+- Rastrear livros emprestados por membro ✅
 
 ## 💻 Instalação e Execução
 
