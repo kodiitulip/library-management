@@ -25,7 +25,7 @@ class State:
 class Member:
     username: str
     password: str = field(compare=False)
-    borrowed_books: list[str] = field(default_factory=list, compare=False)
+    borrowed_books: list[Book] = field(default_factory=list, compare=False)
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -34,11 +34,8 @@ class Member:
     def from_dict(dict: dict[str, Any]) -> Member:
         if "username" not in dict or "password" not in dict:
             raise ValueError("Could not parse user from dictionary")
-
-        borrowed = dict.get("borrowed_books", [])
-        if not isinstance(borrowed, list):
-            borrowed = []
-
+        books = [Book.from_dict(book) for book in dict.get("borrowed_books", [])]
+        borrowed = [book for book in books if book is not None]
         return Member(
             username=dict["username"],
             password=dict["password"],
@@ -83,7 +80,7 @@ class MemberList:
         return memlist
 
 
-@dataclass(order=True)
+@dataclass(order=True, unsafe_hash=True)
 class Book:
     title: str
     author: str
@@ -250,6 +247,11 @@ class BookBST:
 
         _in_order(self.root)
         return result
+
+    def list_by_author_and_title(self, title: str, author: str) -> list[Book]:
+        by_author = set(self.list_by_author(author))
+        by_title = set(self.list_by_title(title))
+        return list(by_author.intersection(by_title))
 
     def list_by_author(self, author: str) -> list[Book]:
         return self.in_order_traversal(

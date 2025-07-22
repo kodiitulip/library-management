@@ -1,8 +1,10 @@
+from rich.console import Console
+from rich.table import Table
 from typer import Context, Option, Typer
 
 from rich import print
 
-from library_management.data import Member, MemberList, BookBST, BookStatus
+from library_management.data import Book, Member, MemberList, BookBST, BookStatus
 from library_management.hooks import savemutation
 
 usercmd = Typer(name="user", help="Comandos para lidar com usuários")
@@ -10,6 +12,7 @@ usercmd = Typer(name="user", help="Comandos para lidar com usuários")
 
 @usercmd.command("list")
 def list_users(ctx: Context):
+    """Lista usuários cadastrados"""
     users: list[Member] = ctx.obj.member_storage.members
     print("\n".join(__get_pretty_list(users, ctx.obj.member_storage)))
 
@@ -44,7 +47,7 @@ def register_user(
 
 @usercmd.command("borrow")
 @savemutation
-def borrow_book(ctx: Context, title: str = Option(..., "--title", "-t", prompt=True)):
+def borrow_book(ctx: Context, title: str = Option("", "--title", "-t", prompt=True), author: str = Option("", "--author", "-a", prompt=True)):
     """Pegar um livro emprestado"""
     member_storage: MemberList = ctx.obj.member_storage
     book_storage: BookBST = ctx.obj.book_storage
@@ -54,23 +57,39 @@ def borrow_book(ctx: Context, title: str = Option(..., "--title", "-t", prompt=T
         print("[red]Você precisa estar logado para emprestar livros[/red]")
         return
 
-    book = book_storage.search_by_title(title)
-    if book is None:
-        print(f"[red]Livro '{title}' não encontrado[/red]")
+    book_list = book_storage.list_by_author_and_title(title, author)
+    if not book_list:
+        print(f"[red]Livro '{title} por {author}' não encontrado[/red]")
         return
 
+    index = ""
+    console = Console()
+    if len(book_list) > 1:
+        table = Table("Index","Título", "Autor", "Disponível", title="Livros Encontrados")
+        for idx, book in enumerate( book_list ):
+            available = "[green]DISPONÍVEL[/green]" if book.status == BookStatus.AVAILABLE else "[red]INDISPONÍVEL[/red]"
+            table.add_row(str( idx+1 ), book.title, book.author, available)
+        console.print(table)
+
+        while not index.isnumeric():
+            index = console.input("Qual livro você quer pegar? (Escolha do Index): ")
+    else:
+        index = "1"
+
+    book = book_list[int(index)-1]
+
     if book.status == BookStatus.UNAVAILABLE:
-        print(f"[red]Livro '{title}' já está emprestado[/red]")
+        print(f"[red]Livro '{book.title} por {book.author}' já está emprestado[/red]")
         return
 
     book.status = BookStatus.UNAVAILABLE
-    member.borrowed_books.append(book.title)
-    print(f"[green]Livro '{title}' emprestado para {member.username}[/green]")
+    member.borrowed_books.append(book)
+    print(f"[green]Livro '{book.title} por {book.author}' emprestado para {member.username}[/green]")
 
 
 @usercmd.command("return")
 @savemutation
-def return_book(ctx: Context, title: str = Option(..., "--title", "-t", prompt=True)):
+def return_book(ctx: Context):
     """Devolver um livro emprestado"""
     member_storage: MemberList = ctx.obj.member_storage
     book_storage: BookBST = ctx.obj.book_storage
@@ -80,18 +99,30 @@ def return_book(ctx: Context, title: str = Option(..., "--title", "-t", prompt=T
         print("[red]Você precisa estar logado para devolver livros[/red]")
         return
 
-    if title not in member.borrowed_books:
-        print(f"[red]Você não tem o livro '{title}' emprestado[/red]")
+    index = ""
+    console = Console()
+    if len(member.borrowed_books) > 1:
+        table = Table("Index","Título", "Autor", title="Livros Encontrados")
+        for idx, book in enumerate( member.borrowed_books ):
+            table.add_row(str( idx+1 ), book.title, book.author)
+        console.print(table)
+
+        while not index.isnumeric():
+            index = console.input("Qual livro você quer devolver? (Escolha do Index): ")
+    elif len(member.borrowed_books) == 1:
+        index = "1"
+    else:
+        console.print("[red]Você não tem livros para devolver[/red]")
         return
 
-    book = book_storage.search_by_title(title)
-    if book is None:
-        print(f"[red]Livro '{title}' não encontrado[/red]")
-        return
 
-    book.status = BookStatus.AVAILABLE
-    member.borrowed_books.remove(title)
-    print(f"[green]Livro '{title}' devolvido por {member.username}[/green]")
+    book = member.borrowed_books[int(index)-1]
+    books = book_storage.list_by_author_and_title(book.title, book.author)
+    if not books:
+        raise ValueError("Livro não encontrado na biblioteca")
+    books[0].status = BookStatus.AVAILABLE
+    member.borrowed_books.remove(book)
+    print(f"[green]Livro '{book.title} por {book.author}' devolvido por {member.username}[/green]")
 
 
 @usercmd.command("track")
