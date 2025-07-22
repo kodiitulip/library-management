@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from rich.console import Console
+from rich.table import Table
 from typer import Argument, Context, Option, Typer
 from rich import print
 from library_management.data import Book, BookBST, BookStatus
@@ -53,37 +55,32 @@ def remove_book(
 @bookcmd.command("list")
 def list_books(ctx: Context):
     """Lista todos os livros disponíveis na Biblioteca"""
-    b: list[Book] = ctx.obj.book_storage.in_order_traversal()
-    for book in b:
-        print(
-            f"- [green]{book.title}[/green] por [yellow]{book.author}[/yellow]"
-            + ("\t[red](INDISPONÍVEL)" if book.status == BookStatus.UNAVAILABLE else "")
-        )
+    books: list[Book] = ctx.obj.book_storage.in_order_traversal()
+    console = Console()
+    table = Table("Título", "Autor", "Disponível", title="Tabela de Livros")
+    for book in books:
+        available = "[green]DISPONÍVEL[/green]" if book.status == BookStatus.AVAILABLE else "[red]INDISPONÍVEL[/red]"
+        table.add_row(book.title, book.author, available)
+    console.print(table)
 
 
 @bookcmd.command("find")
 def find_books(
     ctx: Context,
-    title: str = Option("", "--title", "-t", help="Pesquisa por título"),
-    author: str = Option("", "--author", "-a", "--by", help="Pesquisa por autor"),
+    title: str = Option("", "--title", "-t", help="Pesquisa por título", prompt=True),
+    author: str = Option("", "--author", "-a", "--by", help="Pesquisa por autor", prompt=True),
 ):
     """Encontra um livro pelo titúlo ou pelo autor"""
-    if not title and not author:
-        return print(
-            "[red]Sem termos de pesquisa.[/red] \
-Porfavor use --title ou --author para pesquisar, \
-sempre use --help para verificar ajuda"
-        )
 
     library: BookBST = ctx.obj.book_storage
-    list_by_author: list[Book] = library.list_by_author(author) if author else []
-    list_by_title: list[Book] = library.list_by_title(title) if title else []
-    final = [
-        x
-        for i, x in enumerate(list_by_title + list_by_author)
-        if x not in (list_by_title + list_by_author)[:i]
-    ]
+    list_by_author = set( library.list_by_author(author) )
+    list_by_title = set( library.list_by_title(title) )
+    final = list(list_by_author.intersection(list_by_title))
     if not final:
         return print("[red]Livros não encontrados[/red]")
+    console = Console()
+    table = Table("Título", "Autor", "Disponível", title="Tabela de Livros")
     for book in final:
-        print(f"- [green]{book.title}[/green] por [yellow]{book.author}[/yellow]")
+        available = "[green]DISPONÍVEL[/green]" if book.status == BookStatus.AVAILABLE else "[red]INDISPONÍVEL[/red]"
+        table.add_row(book.title, book.author, available)
+    console.print(table)
