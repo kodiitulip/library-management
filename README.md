@@ -7,16 +7,16 @@ interface de linha de comando (CLI) simples.
 ## ✨ Entidades Principais
 
 - `Book` (Livro) ✅
-- `Member` (Usuário) 🚧
+- `Member` (Usuário) ✅
 - `Library` (Biblioteca) ✅
 
 ## ✨ Funcionalidades Principais
 
 - Adicionar / Remover livros ✅
 - Buscar livros ✅
-- Emprestar / Devolver livros
+- Emprestar / Devolver livros ✅
 - Listar livros disponíveis ✅
-- Rastrear livros emprestados por membro
+- Rastrear livros emprestados por membro ✅
 
 ## 💻 Instalação e Execução
 
@@ -143,7 +143,6 @@ armazenar o estado da biblioteca entre comandos da interface
 termos uma interface de linha de comando limpa e funcional
 além da biblioteca [Rich](https://rich.readthedocs.io/en/stable/introduction.html)
 para ter maior controle do output pro console
-
 
 ### Contribuições
 
